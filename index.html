@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Chess Arena — Play chess online with friends. Singleplayer AI, multiplayer rooms, spectator mode, voice & text chat.">
+    <title>Chess Arena — Play Online Chess</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Chess.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <!-- PeerJS from CDN -->
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+</head>
+<body>
+
+    <!-- ========== PARTICLES BACKGROUND ========== -->
+    <canvas id="particles-canvas"></canvas>
+
+    <!-- ========== LANDING PAGE ========== -->
+    <section id="landing-page" class="page active">
+        <div class="landing-container">
+            <div class="logo-section">
+                <div class="logo-icon">♔</div>
+                <h1 class="logo-title">Chess <span class="accent">Arena</span></h1>
+                <p class="logo-subtitle">Master the board. Challenge the world.</p>
+            </div>
+
+            <div class="mode-cards">
+                <div class="mode-card" id="btn-singleplayer" tabindex="0">
+                    <div class="card-glow"></div>
+                    <div class="card-icon">🤖</div>
+                    <h2>vs AI</h2>
+                    <p>Challenge our chess engine</p>
+                    <div class="card-difficulty">
+                        <span class="diff-dot easy"></span>
+                        <span class="diff-dot medium"></span>
+                        <span class="diff-dot hard"></span>
+                    </div>
+                </div>
+
+                <div class="mode-card featured" id="btn-multiplayer" tabindex="0">
+                    <div class="card-glow"></div>
+                    <div class="card-badge">POPULAR</div>
+                    <div class="card-icon">⚔️</div>
+                    <h2>Multiplayer</h2>
+                    <p>Play with a friend online</p>
+                    <div class="card-players">
+                        <span class="player-dot"></span>
+                        <span class="player-dot"></span>
+                    </div>
+                </div>
+
+                <div class="mode-card" id="btn-room" tabindex="0">
+                    <div class="card-glow"></div>
+                    <div class="card-icon">🏠</div>
+                    <h2>Room Play</h2>
+                    <p>Create or join a private room</p>
+                    <div class="card-feature">+ Spectators</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== AI DIFFICULTY SELECTION ========== -->
+    <section id="ai-setup-page" class="page">
+        <div class="setup-container">
+            <button class="back-btn" id="ai-back-btn">← Back</button>
+            <h1>Choose Difficulty</h1>
+            <p class="setup-subtitle">Select your opponent's strength</p>
+            <div class="difficulty-cards">
+                <div class="diff-card" data-depth="1" tabindex="0">
+                    <div class="diff-icon">🟢</div>
+                    <h3>Beginner</h3>
+                    <p>Random moves, easy to beat</p>
+                </div>
+                <div class="diff-card" data-depth="2" tabindex="0">
+                    <div class="diff-icon">🟡</div>
+                    <h3>Intermediate</h3>
+                    <p>Thinks 2 moves ahead</p>
+                </div>
+                <div class="diff-card selected" data-depth="3" tabindex="0">
+                    <div class="diff-icon">🔴</div>
+                    <h3>Advanced</h3>
+                    <p>Thinks 3 moves ahead</p>
+                </div>
+            </div>
+            <div class="color-select">
+                <h2>Pick Your Color</h2>
+                <div class="color-options">
+                    <button class="color-btn selected" data-color="w" id="color-white">
+                        <span class="piece-preview white-king">♔</span> White
+                    </button>
+                    <button class="color-btn" data-color="b" id="color-black">
+                        <span class="piece-preview black-king">♚</span> Black
+                    </button>
+                    <button class="color-btn" data-color="random" id="color-random">
+                        🎲 Random
+                    </button>
+                </div>
+            </div>
+            <button class="primary-btn glow-btn" id="start-ai-game">Start Game</button>
+        </div>
+    </section>
+
+    <!-- ========== ROOM SETUP PAGE ========== -->
+    <section id="room-setup-page" class="page">
+        <div class="setup-container">
+            <button class="back-btn" id="room-back-btn">← Back</button>
+            <h1>Room Play</h1>
+            <p class="setup-subtitle">Create a private game or join one</p>
+
+            <div class="room-actions">
+                <div class="room-action-card" id="create-room-btn" tabindex="0">
+                    <div class="room-icon">➕</div>
+                    <h3>Create Room</h3>
+                    <p>Generate a room code to share</p>
+                </div>
+                <div class="room-divider">
+                    <span>OR</span>
+                </div>
+                <div class="room-action-card" id="join-room-section" tabindex="0">
+                    <div class="room-icon">🔗</div>
+                    <h3>Join Room</h3>
+                    <div class="join-input-group">
+                        <input type="text" id="room-code-input" placeholder="Enter Room Code" maxlength="8" autocomplete="off">
+                        <button class="join-btn" id="join-room-btn">Join</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="spectator-toggle">
+                <label class="toggle-label">
+                    <input type="checkbox" id="spectator-checkbox">
+                    <span class="toggle-slider"></span>
+                    Join as Spectator
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== MULTIPLAYER SETUP PAGE ========== -->
+    <section id="multi-setup-page" class="page">
+        <div class="setup-container">
+            <button class="back-btn" id="multi-back-btn">← Back</button>
+            <h1>Multiplayer</h1>
+            <p class="setup-subtitle">Share this code with your friend</p>
+
+            <div class="room-code-display" id="multi-code-display" style="display:none;">
+                <span class="code-label">Your Game Code</span>
+                <span class="code-value" id="multi-code-value"></span>
+                <button class="copy-btn" id="multi-copy-btn">📋 Copy</button>
+            </div>
+
+            <div class="multi-options">
+                <button class="primary-btn glow-btn" id="create-multi-game">Create Game</button>
+                <div class="room-divider"><span>OR</span></div>
+                <div class="join-input-group">
+                    <input type="text" id="multi-code-input" placeholder="Enter Game Code" maxlength="8" autocomplete="off">
+                    <button class="join-btn" id="join-multi-btn">Join Game</button>
+                </div>
+            </div>
+
+            <div class="waiting-indicator" id="multi-waiting" style="display:none;">
+                <div class="spinner"></div>
+                <p>Waiting for opponent to join...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== ROOM WAITING PAGE ========== -->
+    <section id="room-waiting-page" class="page">
+        <div class="setup-container">
+            <button class="back-btn" id="waiting-back-btn">← Back</button>
+            <h1>Room Created!</h1>
+            <div class="room-code-display">
+                <span class="code-label">Room Code</span>
+                <span class="code-value" id="room-code-value"></span>
+                <button class="copy-btn" id="copy-room-code">📋 Copy</button>
+            </div>
+            <p class="setup-subtitle">Share this code with friends to join.</p>
+            <div class="waiting-indicator">
+                <div class="spinner"></div>
+                <p>Waiting for players...</p>
+            </div>
+            <div class="room-players-list" id="room-players-list">
+                <h3>Players in Room</h3>
+                <ul id="players-ul"></ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== GAME PAGE ========== -->
+    <section id="game-page" class="page">
+        <div class="game-container">
+            <!-- Top player info -->
+            <div class="player-bar top-player" id="opponent-bar">
+                <div class="player-avatar">♟</div>
+                <div class="player-info">
+                    <span class="player-name" id="opponent-name">Opponent</span>
+                    <span class="player-rating" id="opponent-status"></span>
+                </div>
+                <div class="captured-pieces" id="opponent-captured"></div>
+            </div>
+
+            <!-- Chess board wrapper -->
+            <div class="board-wrapper">
+                <div class="board-coordinates-top">
+                    <span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span>
+                </div>
+                <div class="board-with-coords">
+                    <div class="board-coordinates-left">
+                        <span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span>
+                    </div>
+                    <div id="chess-board" class="chess-board"></div>
+                    <div class="board-coordinates-right">
+                        <span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span>
+                    </div>
+                </div>
+                <div class="board-coordinates-bottom">
+                    <span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span>
+                </div>
+
+                <!-- Promotion dialog -->
+                <div class="promotion-dialog" id="promotion-dialog" style="display:none;">
+                    <div class="promotion-overlay"></div>
+                    <div class="promotion-pieces" id="promotion-pieces"></div>
+                </div>
+
+                <!-- Game over overlay -->
+                <div class="game-over-overlay" id="game-over-overlay" style="display:none;">
+                    <div class="game-over-card">
+                        <div class="game-over-icon" id="game-over-icon">👑</div>
+                        <h2 id="game-over-title">Game Over</h2>
+                        <p id="game-over-message"></p>
+                        <div class="game-over-btns">
+                            <button class="primary-btn" id="rematch-btn">Rematch</button>
+                            <button class="secondary-btn" id="home-btn">Home</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Spectator badge -->
+                <div class="spectator-badge" id="spectator-badge" style="display:none;">
+                    👁 SPECTATING
+                </div>
+            </div>
+
+            <!-- Bottom player info -->
+            <div class="player-bar bottom-player" id="player-bar">
+                <div class="player-avatar">♙</div>
+                <div class="player-info">
+                    <span class="player-name" id="player-name">You</span>
+                    <span class="player-rating" id="player-status"></span>
+                </div>
+                <div class="captured-pieces" id="player-captured"></div>
+            </div>
+
+            <!-- Side panel -->
+            <div class="side-panel" id="side-panel">
+                <div class="panel-tabs">
+                    <button class="panel-tab active" data-tab="moves" id="tab-moves">Moves</button>
+                    <button class="panel-tab" data-tab="chat" id="tab-chat">
+                        Chat <span class="chat-badge" id="chat-badge" style="display:none;">0</span>
+                    </button>
+                </div>
+
+                <!-- Move History -->
+                <div class="panel-content active" id="moves-panel">
+                    <div class="moves-list" id="moves-list"></div>
+                </div>
+
+                <!-- Chat Panel -->
+                <div class="panel-content" id="chat-panel">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-system-msg">Chat is available in multiplayer & room games.</div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chat-input" placeholder="Type a message..." maxlength="200" autocomplete="off">
+                        <button id="chat-send-btn">➤</button>
+                    </div>
+                </div>
+
+                <!-- Voice Chat Controls -->
+                <div class="voice-controls" id="voice-controls" style="display:none;">
+                    <button class="voice-btn" id="voice-toggle-btn" title="Toggle Voice Chat">
+                        <span class="voice-icon">🎤</span>
+                        <span class="voice-status">Off</span>
+                    </button>
+                    <div class="voice-indicator" id="voice-indicator">
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                    </div>
+                </div>
+
+                <!-- Game Actions -->
+                <div class="game-actions">
+                    <button class="action-btn" id="resign-btn" title="Resign">🏳️ Resign</button>
+                    <button class="action-btn" id="draw-btn" title="Offer Draw">🤝 Draw</button>
+                    <button class="action-btn" id="flip-btn" title="Flip Board">🔄 Flip</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== WATERMARK ========== -->
+    <div class="watermark">
+        Created by <strong>Irshad Siddiqui</strong> | Insta <a href="https://instagram.com/_irshad__002" target="_blank" rel="noopener">@_irshad__002</a>
+    </div>
+
+    <!-- ========== TOAST NOTIFICATION ========== -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="js/chess-board.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/network.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/voice.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
